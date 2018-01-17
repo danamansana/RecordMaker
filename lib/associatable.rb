@@ -84,7 +84,7 @@ module Associatable
         "#{self.table_name} JOIN #{through_class.table_name} ON #{through.primary_key} = #{through.foreign_key}" +
         " JOIN #{source_class.table_name} ON #{source.primary_key} = #{source.foreign_key}"
       else
-        "#{self.table_name} JOIN #{through_class.table_name} ON #{self.table_name}.#{through.primary_key} = #{through_class.table_name}.#{through.foreign_key}" +
+        "#{self.table_name} JOIN #{through_class.table_name} ON #{self.table_name}.#{through.primary_key} = #{through.foreign_key}" +
         " JOIN #{through_class.send("through_from_#{source}".to_sym)}"
       end
     }
