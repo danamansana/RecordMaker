@@ -2,6 +2,7 @@ require_relative 'searchable'
 require_relative 'db_connection'
 require 'active_support/inflector'
 
+
 class AssocOptions
   attr_accessor(
     :name,
@@ -48,7 +49,7 @@ module Associatable
   attr_accessor :assoc_ops
 
   def assoc_options(options)
-    @assoc_ops = @assoc_options || []
+    @assoc_ops = self.assoc_ops || []
     @assoc_ops << options
   end
 
@@ -106,16 +107,17 @@ module Associatable
 
   end
 
-  def has_many_through_class_name(name, through_method, source_method)
+  def has_many_through_class(name, through_method, source_method)
 
-    define_singleton_method("through_class_name_#{name}") {
+    define_singleton_method("through_class_#{name}") {
       through = assoc_ops.select {|op| through_method == op.name}.first
       through_class = through.model_class
       source = through_class.assoc_ops.select{|op| source_method == op.name}.first
       if source
         source_class = source.model_class
+        return source_class
       else
-        through_class.send("through_class_name_#{source_method}".to_sym)
+        through_class.send("through_class_#{source_method}".to_sym)
       end
     }
 
@@ -124,7 +126,7 @@ module Associatable
   def has_many_through(name, through_method, source_method)
     has_many_through_select(name, through_method, source_method)
     has_many_through_from(name, through_method, source_method)
-    has_many_through_class_name(name, through_method, source_method)
+    has_many_through_class(name, through_method, source_method)
 
     define_method(name) {
     instances = DBConnection.execute(<<-SQL)
@@ -134,7 +136,7 @@ module Associatable
     #{self.class.send("through_from_#{name}".to_sym)}
     SQL
 
-    instances
+    instances.map{|instance| self.class.send("through_class_#{name}".to_sym).new(instance)}
     }
   end
 
